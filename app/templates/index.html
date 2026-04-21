@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI DevOps Enterprise Platform v3</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar glass">
+      <div>
+        <div class="brand">
+          <div class="brand-icon">V3</div>
+          <div>
+            <h1>Enterprise Platform</h1>
+            <p>Jira · RAG · LLM · GitHub · Deploy</p>
+          </div>
+        </div>
+        <nav class="nav-list">
+          <button class="nav-link active" data-view="platform">Platform Dashboard</button>
+          <button class="nav-link" data-view="github">GitHub Workflow</button>
+          <button class="nav-link" data-view="deploy">Deploy Ready</button>
+        </nav>
+      </div>
+      <div class="theme-row">
+        <span>Appearance</span>
+        <button id="themeToggle" class="secondary-btn">Toggle</button>
+      </div>
+    </aside>
+
+    <main class="content">
+      <section class="hero glass">
+        <div>
+          <p class="eyebrow">Version 3 enterprise showcase</p>
+          <h2>Live Jira planning, provider-backed AI reasoning, and production-grade CI telemetry</h2>
+          <p class="hero-copy">Run the platform from live Jira issues, uploaded JSON specs, or pasted ticket text, then connect the result to real GitHub workflows, deployment targets, and production authentication.</p>
+        </div>
+        <div class="hero-stats">
+          <div class="stat-card"><span>Health</span><strong id="healthScore">--</strong></div>
+          <div class="stat-card"><span>Build Rate</span><strong id="buildRate">--</strong></div>
+          <div class="stat-card"><span>Deployments</span><strong id="deploymentsCount">--</strong></div>
+        </div>
+      </section>
+
+      <section id="loginPanel" class="panel glass login-panel">
+        <div>
+          <h3>Production Login</h3>
+          <p>JWT access + refresh cookies, admin bootstrap, protected APIs, and account lockout on repeated failures.</p>
+        </div>
+        <form id="loginForm" class="login-form">
+          <input name="username" type="email" value="admin@example.com" placeholder="Email" required />
+          <input name="password" type="password" value="Admin123!" placeholder="Password" required />
+          <button class="primary-btn" type="submit">Sign in</button>
+        </form>
+        <div>
+          <div id="loginMessage" class="status-text"></div>
+          <button id="logoutBtn" class="secondary-btn small-btn" type="button">Logout</button>
+        </div>
+      </section>
+
+      <section id="platformView" class="dashboard-grid">
+        <div class="panel glass span-2">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Pipeline intake</p>
+              <h3>Launch a live planning run</h3>
+            </div>
+            <div class="chip success" id="profileChip">Auth required</div>
+          </div>
+          <form id="pipelineForm" class="intake-form">
+            <div class="form-grid three-up">
+              <div class="input-group">
+                <label for="provider">LLM provider</label>
+                <select id="provider" name="provider">
+                  <option value="openai">OpenAI</option>
+                  <option value="gemini">Gemini</option>
+                </select>
+              </div>
+              <div class="input-group">
+                <label for="modelName">Model override</label>
+                <input id="modelName" name="model_name" placeholder="Optional custom model name" />
+              </div>
+              <div class="input-group">
+                <label for="jiraIssueKey">Live Jira issue key</label>
+                <input id="jiraIssueKey" name="jira_issue_key" placeholder="PROJ-123" />
+              </div>
+              <div class="input-group">
+                <label for="githubRepository">GitHub repository</label>
+                <input id="githubRepository" name="github_repository" placeholder="owner/repo" />
+              </div>
+              <div class="input-group">
+                <label for="githubBranch">GitHub branch</label>
+                <input id="githubBranch" name="github_branch" placeholder="main" />
+              </div>
+              <div class="input-group">
+                <label for="jsonFile">Upload JSON requirement</label>
+                <input id="jsonFile" name="json_file" type="file" accept="application/json" />
+              </div>
+            </div>
+            <div class="input-group">
+              <label for="ticketText">Paste Jira / product ticket text</label>
+              <textarea id="ticketText" name="ticket_text" rows="6" placeholder="Paste a Jira requirement, story, or acceptance criteria"></textarea>
+            </div>
+            <div class="action-row wrap">
+              <button class="primary-btn" type="submit">Launch Pipeline</button>
+              <button class="secondary-btn" type="button" id="loadSampleTicket">Sample ticket</button>
+              <button class="secondary-btn" type="button" id="fetchJiraBtn">Preview Jira</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="panel glass">
+          <div class="panel-header"><h3>Run analytics</h3><div class="chip info">Real charts</div></div>
+          <canvas id="pipelineChart" height="240"></canvas>
+        </div>
+
+        <div class="panel glass span-2">
+          <div class="panel-header">
+            <div><p class="eyebrow">Execution breakdown</p><h3>Stage-by-stage observability</h3></div>
+            <div id="runBadge" class="chip">Awaiting run</div>
+          </div>
+          <div id="stageContainer" class="stage-grid"></div>
+        </div>
+
+        <div class="panel glass">
+          <div class="panel-header"><h3>Jira preview</h3><div class="chip warning">Live</div></div>
+          <div id="jiraPreview" class="list-block empty-state">Enter a Jira issue key and preview live issue data here.</div>
+        </div>
+
+        <div class="panel glass">
+          <div class="panel-header"><h3>Recent runs</h3><div class="chip warning">History</div></div>
+          <div id="runList" class="run-list"></div>
+        </div>
+
+        <div class="panel glass span-2">
+          <div class="panel-header"><h3>Stage status mix</h3><div class="chip info">Donut</div></div>
+          <canvas id="stageMixChart" height="220"></canvas>
+        </div>
+      </section>
+
+      <section id="githubView" class="dashboard-grid hidden">
+        <div class="panel glass span-3">
+          <div class="panel-header github-toolbar">
+            <div><p class="eyebrow">GitHub workflow</p><h3>CI / CD command center</h3></div>
+            <form id="githubForm" class="toolbar-form">
+              <input id="repoLookup" placeholder="owner/repo" required />
+              <input id="branchLookup" placeholder="branch (optional)" />
+              <button class="primary-btn" type="submit">Load repo</button>
+            </form>
+          </div>
+          <div id="badgeRow" class="badge-row"></div>
+        </div>
+        <div class="panel glass span-2">
+          <div class="panel-header"><div><p class="eyebrow">Live repo telemetry</p><h3 id="repoHeading">Repository overview</h3></div><div id="integrationStatus" class="chip info">Waiting</div></div>
+          <div id="githubStages" class="github-stage-row"></div>
+        </div>
+        <div class="panel glass">
+          <div class="panel-header"><h3>Workflow durations</h3><div class="chip info">Chart</div></div>
+          <canvas id="githubChart" height="240"></canvas>
+        </div>
+        <div class="panel glass">
+          <div class="panel-header"><h3>Latest commits</h3><div class="chip info">Git log</div></div>
+          <div id="commitList" class="list-block"></div>
+        </div>
+        <div class="panel glass span-2">
+          <div class="panel-header"><h3>Workflow runs</h3><div class="chip success">Status board</div></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Name</th><th>Branch</th><th>Status</th><th>Conclusion</th><th>Duration</th><th>Started</th></tr></thead>
+              <tbody id="workflowTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="deployView" class="dashboard-grid hidden">
+        <div class="panel glass span-3">
+          <div class="panel-header"><h3>Deployment targets</h3><div class="chip success">Render · Railway · Azure</div></div>
+          <div class="deploy-grid">
+            <div class="list-item"><strong>Render</strong><span>render.yaml + Dockerfile + health check route</span></div>
+            <div class="list-item"><strong>Railway</strong><span>railway.json + Dockerfile + startup command</span></div>
+            <div class="list-item"><strong>Azure</strong><span>deploy/azure/startup.sh + sample GitHub deploy workflow template</span></div>
+          </div>
+        </div>
+        <div class="panel glass span-2">
+          <div class="panel-header"><h3>Production checklist</h3><div class="chip warning">Ops</div></div>
+          <div class="timeline">
+            <div class="timeline-item"><strong>Secrets</strong><span>Set OpenAI, Gemini, GitHub, and Jira credentials as environment variables only.</span></div>
+            <div class="timeline-item"><strong>Database</strong><span>Switch DATABASE_URL to Postgres in hosted environments.</span></div>
+            <div class="timeline-item"><strong>Cookies</strong><span>Enable COOKIE_SECURE=true and use HTTPS in production.</span></div>
+            <div class="timeline-item"><strong>CI Badges</strong><span>Workflow badge URLs render automatically after the first successful GitHub Actions run.</span></div>
+          </div>
+        </div>
+        <div class="panel glass">
+          <div class="panel-header"><h3>Hosted chart</h3><div class="chip info">Radar</div></div>
+          <canvas id="deployChart" height="220"></canvas>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
